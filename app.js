@@ -1,5 +1,5 @@
 import { initializeApp } from
-"https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
 import {
 getFirestore,
@@ -7,15 +7,13 @@ collection,
 getDocs
 }
 from
-"https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+"https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
 
-apiKey: "YOUR_API_KEY",
-
-authDomain: "YOUR_PROJECT.firebaseapp.com",
-
-projectId: "YOUR_PROJECT_ID"
+apiKey: "API_KEY",
+authDomain: "PROJECT.firebaseapp.com",
+projectId: "PROJECT_ID"
 
 };
 
@@ -23,91 +21,72 @@ const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
 
-const container =
-document.getElementById("productContainer");
-
-const searchInput =
-document.getElementById("searchInput");
-
-let allProducts = [];
-
 loadProducts();
 
 async function loadProducts(){
 
+const grid =
+document.getElementById("productGrid");
+
+grid.innerHTML = "Loading...";
+
 const snapshot =
 await getDocs(collection(db,"products"));
 
-allProducts = [];
+grid.innerHTML = "";
 
 snapshot.forEach(doc=>{
 
-allProducts.push({
-id:doc.id,
-...doc.data()
-});
+const p = doc.data();
 
-});
+grid.innerHTML += `
 
-renderProducts(allProducts);
-}
-
-function renderProducts(products){
-
-container.innerHTML="";
-
-products.forEach(product=>{
-
-const whatsapp =
-`https://wa.me/${product.phone}?text=Saya ingin pesan ${product.productName}`;
-
-container.innerHTML += `
 <div class="card">
 
-<img src="${product.photo}" alt="">
+<img src="${p.photo}">
 
 <div class="card-body">
 
-<h3>${product.productName}</h3>
+<div class="product-name">
+${p.productName}
+</div>
 
 <div class="price">
-Rp ${Number(product.price).toLocaleString()}
+Rp ${Number(p.price).toLocaleString('id-ID')}
 </div>
 
 <div class="store">
-${product.storeName}
+${p.storeName}
 </div>
 
-<a
-class="btn"
-href="${whatsapp}"
-target="_blank">
-Pesan via WhatsApp
-</a>
+<button
+class="buy-btn"
+onclick="orderProduct(
+'${p.productName}',
+'${p.phone}'
+)">
+Pesan
+</button>
 
 </div>
+
 </div>
+
 `;
 
 });
+
 }
 
-searchInput.addEventListener("keyup",()=>{
+window.orderProduct =
+function(product,phone){
 
-const keyword =
-searchInput.value.toLowerCase();
+const text =
+`Halo, saya ingin memesan ${product}`;
 
-const filtered =
-allProducts.filter(item=>
+const wa =
+`https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 
-item.productName.toLowerCase().includes(keyword)
+window.open(wa,'_blank');
 
-||
-
-item.storeName.toLowerCase().includes(keyword)
-
-);
-
-renderProducts(filtered);
-
-});
+}
